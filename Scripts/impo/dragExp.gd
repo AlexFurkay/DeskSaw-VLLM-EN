@@ -291,7 +291,10 @@ func _startDrag(body: RigidBody2D, mouse_pos: Vector2) -> void:
 
 	if behaviornode:
 		behaviornode.beingDragged = true
-
+		if not behaviornode.isSleeping and not behaviornode.isUnconscious:
+			var examples: Array = behaviornode._pickExamples(behaviornode.dialogueSys.data.beingDragged.duplicate(), 8)
+			LLMManager.requestPooledReaction(behaviornode._skinTag() + ":grab", examples, behaviornode._on_drag_reaction, "", behaviornode.CATEGORY_SITUATION.get("grab", ""))
+			AudioManager.playVoiceWeighted(behaviornode.voiceSet, 0.56, 0.28) # было 50%/25%/25%, теперь звук в 1.5x чаще (~84% против 25% тишины)
 	await get_tree().process_frame
 
 	if not _dragging or not is_instance_valid(_dragger) or not is_instance_valid(_dragged_body):
@@ -307,11 +310,21 @@ func _startDrag(body: RigidBody2D, mouse_pos: Vector2) -> void:
 
 
 func _stopDrag() -> void:
+	# Read the velocity BEFORE _dragged_body gets nulled - a throw used to
+	# never deal damage at all, because the grab itself already puts the pet
+	# into ragdoll, and the normal speed check in behaviornode._physics_process()
+	# stops re-triggering until this ragdoll cycle finishes (see
+	# registerThrowImpact in behavior.gd).
+	var released_velocity := Vector2.ZERO
+	if is_instance_valid(_dragged_body):
+		released_velocity = _dragged_body.linear_velocity
+
 	_dragging = false
 	_dragged_body = null
 
 	if behaviornode:
 		behaviornode.beingDragged = false
+		behaviornode.registerThrowImpact(released_velocity)
 
 	if is_instance_valid(_dragger):
 		_dragger.queue_free()

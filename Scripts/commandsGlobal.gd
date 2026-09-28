@@ -33,7 +33,7 @@ func openskinfold():
 	OS.shell_open(ProjectSettings.globalize_path("user://skin"))
 
 func _setmood(val: float):
-	Console.warning("This command has temporarily been disabled. You can influence mood by petting them")
+	Console.warning("This command is temporarily disabled. Mood can be raised by petting the pet")
 	return val
 
 func reload():
@@ -52,7 +52,7 @@ func spawnExpie(petId: String = ""):
 	instance.get_node("behavior").petId = petId
 
 	var wrapper = Node2D.new()
-	wrapper.scale = Vector2(4.0, 4.0)
+	wrapper.scale = Vector2.ONE * gbData.settings.get("petScale", 4.0)
 
 	get_tree().current_scene.add_child(wrapper)
 	wrapper.owner = get_tree().current_scene
@@ -77,6 +77,16 @@ func _additem(item: String = "containercrate"):
 	instance.global_position = instance.get_global_mouse_position()
 	instance.owner = get_tree().current_scene
 	instance.set_meta("itemName", item)
+
+
+func _cmd_petSize(value: float) -> void:
+	gbData.settings["petScale"] = value
+	gbData.savetodisk("user://CONFIG.json", gbData.settings)
+	Console.print("New pet size: [color=CYAN]%s[/color] (spawn a new one to see it - doesn't affect existing ones)" % value)
+
+
+func _cmd_despawnPet() -> void:
+	clearObj("entity")
 
 
 func clearObj(category: String = "object"):
@@ -109,8 +119,10 @@ func nukesettings():
 	gbData.killEverything()
 	GlobalVariable.dataNuked.emit()
 
-func setmonitor(monitorIndex: int = 1):
-	DisplayServer.window_set_current_screen(monitorIndex)
+func setmonitor(monitorIndex: int = 0):
+	var maxIndex: int = DisplayServer.get_screen_count() - 1
+	var clamped: int = clampi(monitorIndex, 0, maxi(maxIndex, 0))
+	DisplayServer.window_set_current_screen(clamped)
 	GlobalVariable.Fresize()
 
 func resize(nx, ny, isForce = "no") -> String:
@@ -120,9 +132,9 @@ func resize(nx, ny, isForce = "no") -> String:
 		(ex < 200 or ey < 100)
 		or (ex > float(GlobalVariable.screenWidth) / 2 or ey > GlobalVariable.screenHeight)
 		) and isForce == "no":
-		Console.warning("Resizing the console to this size is not recommended!")
-		Console.print("Type '[url=resizeConsole {0} {1} force]resizeConsole {0} {1} force[/url]' if you are sure".format([nx, ny]))
-		return "[color=gray]NOTE: console size will NOT be saved if forced![/color]"
+		Console.warning("Resizing the console to this value is not recommended!")
+		Console.print("Type '[url=resizeConsole {0} {1} force]resizeConsole {0} {1} force[/url]', if you're sure".format([nx, ny]))
+		return "[color=gray]NOTE: the console size will NOT be saved if set with force![/color]"
 	# if it goes through, call a resize
 	var _target_size = Vector2(ex, ey)
 	resizeCommandCalled.emit(_target_size, true)
@@ -154,20 +166,37 @@ func _ready():
 	runInitialCommands.connect(_do_i_cmds)
 
 	# register commands
-	Console.create_command("log", _log, "Log a string to the console.")
-	Console.create_command("visionToggle", _cmd_visionToggle, "toggles screen-reaction vision")
-	Console.create_command("resizeConsole", resize, "resize the console")
+	Console.create_command("log", _log, "print a line to the console.")
+	Console.create_command("toggleAI", _cmd_visionToggle, "turns ALL AI reactions on/off (no arguments = toggle)")
+	Console.create_command("toggleProfanity", _cmd_toggleProfanity, "allows/forbids profanity in AI-generated lines (no arguments = toggle)")
+	Console.create_command("toggleFlirt", _cmd_toggleFlirt, "allows/forbids light flirting at very good mood (no arguments = toggle)")
+	Console.create_command("toggleDebugTags", _cmd_toggleDebugTags, "adds a source prefix to AI lines: [screen]/[state]/[pet]/[grab]/etc (no arguments = toggle)")
+	Console.create_command("toggleAiLog", _cmd_toggleAiLog, "logs every generated line (accepted or rejected + reason) to user://ai_debug_log.txt (no arguments = toggle)")
+	Console.create_command("aiStatus", _cmd_aiStatus, "shows the current state of all AI settings")
+	Console.create_command("aiCreativity", _cmd_aiCreativity, "0.0-1.5, higher = wilder/more random answers, lower = safer/more predictable")
+	Console.create_command("aiRepetitionGuard", _cmd_aiRepetitionGuard, "1.0-2.0, higher = less chance of repeating the same line over and over")
+	Console.create_command("aiModel", _cmd_aiModel, "switches the Ollama model the AI uses (downloads it via Ollama itself if not already there)")
+	Console.create_command("banwords", _cmd_banwords, "manage words/phrases the AI should never use")
+	Console.create_command("visionInterval", _cmd_visionInterval, "min/max seconds between AI reactions to the screen")
+	Console.create_command("reloadLore", LLMManager.reloadLore, "reloads user://LORE.txt")
+	Console.create_command("resizeConsole", resize, "change the console size")
 	#dont use this it breaks alot of shit Console.create_command("reload", reload, "reload everything")
 	Console.create_command("setMonitor", setmonitor, "temporary command")
 	##Console.create_command("killExpie", killExpie, "Yeha")
 	#Console.create_command("setMood", _setmood, "debugging tool that doesnt work because i disabled mood stuff for this build")
 	Console.create_command("spawn", _additem, "")
-	Console.create_command("clearItems", clearObj, "clears by 'entity', 'object' or specific item name/ expie skin name.")
-	Console.create_command("spawnExpie", spawnExpie, "Spawn a Sawian based on whatever your default skin is set to.")
+	Console.create_command("clearItems", clearObj, "clears by 'entity', 'object', or a specific item/skin name")
+	Console.create_command("despawnPet", _cmd_despawnPet, "removes the current pet(s) from the screen, so a new one can be spawned")
+	Console.create_command("spawnExpie", spawnExpie, "spawns a Sawian based on your default skin")
+	Console.create_command("petSize", _cmd_petSize, "changes the character's size (default 4.0) - affects newly spawned ones, not existing ones")
 	#Console.create_command("openSkinFolder", openskinfold, "opens the skin folder")
-	Console.create_command("nukeData", nukesettings, "resets EVERYTHING. Save file, settings, etc. Run at your own risk.")
+	Console.create_command("nukeData", nukesettings, "resets EVERYTHING. Save file, settings, etc. Use at your own risk.")
 	#Console.create_command("expieID", toggleExpieDebugIDs, "toggles debug IDs for expies")
 	#Console.create_command("deathLoop", deathLoop, "please dont crash")
+	
+func _cmd_visionInterval(minSeconds: float, maxSeconds: float) -> void:
+	LLMManager.setInterval(minSeconds, maxSeconds)
+	Console.print("AI screen-reaction interval: [color=CYAN]%s-%s sec[/color]" % [minSeconds, maxSeconds])
 
 func _do_i_cmds():
 	if has_run_commands:
@@ -178,8 +207,120 @@ func _do_i_cmds():
 	Console.execute("setMonitor {0}".format([int(gbData.settings.get("defaultMonitor", 0))]))
 	Console.execute("help")
 	Console.print("[color=PURPLE]You can reopen this console any time by Ctrl + Right Clicking on any Desksawian![/color]")
-	Console.print("EXPIE OR ANY CHARACTERS THAT MAY BE PRESENT HERE ARE NOT MINE. THIS IS A FAN PROJECT")
-	Console.print("IF YOU PAID FOR THIS OR GOT IT FROM SOMEWHERE NOT ON GITHUB, YOU DID IT WRONG!")
+	Console.print("EXPIE OR ANY OTHER CHARACTERS THAT MAY BE PRESENT HERE ARE NOT MINE. THIS IS A FAN PROJECT")
+	Console.print("IF YOU PAID FOR THIS OR DOWNLOADED IT FROM ANYWHERE OTHER THAN GITHUB — YOU DID IT WRONG!")
 	
-func _cmd_visionToggle(on: bool = true) -> void:
-	LLMManager.setEnabled(on)
+## Resolves what a toggle command should do: bare call (state="toggle")
+## flips the current value, "on"/"true"/"1" forces on, "off"/"false"/"0"
+## forces off. This is what makes e.g. `toggleDebugTags` with no argument
+## behave like an actual toggle instead of always turning back on.
+func _resolveToggle(current: bool, state: String) -> bool:
+	state = state.to_lower()
+	if state in ["on", "true", "1", "yes"]:
+		return true
+	if state in ["off", "false", "0", "no"]:
+		return false
+	return not current
+
+func _cmd_visionToggle(state: String = "toggle") -> void:
+	var newVal := _resolveToggle(gbData.settings.get("llmVisionEnabled", true), state)
+	LLMManager.setEnabled(newVal)
+	_print_toggle_state("AI (toggleAI)", newVal)
+
+func _cmd_toggleProfanity(state: String = "toggle") -> void:
+	var newVal := _resolveToggle(gbData.settings.get("llmAllowProfanity", false), state)
+	LLMManager.setProfanityAllowed(newVal)
+	_print_toggle_state("Profanity (toggleProfanity)", newVal)
+
+func _cmd_toggleFlirt(state: String = "toggle") -> void:
+	var newVal := _resolveToggle(gbData.settings.get("llmFlirtEnabled", false), state)
+	LLMManager.setFlirtEnabled(newVal)
+	_print_toggle_state("Flirt (toggleFlirt)", newVal)
+
+func _cmd_toggleDebugTags(state: String = "toggle") -> void:
+	var newVal := _resolveToggle(LLMManager.debugTags, state)
+	LLMManager.setDebugTags(newVal)
+	_print_toggle_state("Debug tags (toggleDebugTags)", newVal)
+
+func _cmd_toggleAiLog(state: String = "toggle") -> void:
+	var newVal := _resolveToggle(gbData.settings.get("logAiLines", false), state)
+	LLMManager.setLogAiLines(newVal)
+	_print_toggle_state("AI line log -> user://ai_debug_log.txt (toggleAiLog)", newVal)
+
+func _print_toggle_state(label: String, on: bool) -> void:
+	if on:
+		Console.print(label + ": [color=GREEN]ON[/color] (run the command again to turn off)")
+	else:
+		Console.print(label + ": [color=RED]OFF[/color] (run the command again to turn on)")
+
+func _cmd_aiStatus() -> void:
+	_print_toggle_state("AI (toggleAI)", gbData.settings.get("llmVisionEnabled", true))
+	_print_toggle_state("Profanity (toggleProfanity)", gbData.settings.get("llmAllowProfanity", false))
+	_print_toggle_state("Flirt (toggleFlirt)", gbData.settings.get("llmFlirtEnabled", false))
+	_print_toggle_state("Debug tags (toggleDebugTags)", LLMManager.debugTags)
+	_print_toggle_state("AI line log (toggleAiLog)", gbData.settings.get("logAiLines", false))
+	Console.print("Screen-reaction interval: [color=CYAN]%s-%s sec[/color]" % [LLMManager.minScreenInterval, LLMManager.maxScreenInterval])
+	Console.print("Model: [color=CYAN]%s[/color]" % LLMManager.modelName)
+	Console.print("Creativity (aiCreativity): [color=CYAN]%s[/color] (0=predictable, 1.5=wild)" % LLMManager.creativity)
+	Console.print("Repetition guard (aiRepetitionGuard): [color=CYAN]%s[/color] (1=can repeat, 2=almost never repeats)" % LLMManager.repetitionGuard)
+	LLMManager.listAvailableModels()
+
+func _cmd_aiCreativity(value: float) -> void:
+	LLMManager.setCreativity(value)
+	Console.print("Creativity: [color=CYAN]%s[/color]" % LLMManager.creativity)
+
+func _cmd_aiRepetitionGuard(value: float) -> void:
+	LLMManager.setRepetitionGuard(value)
+	Console.print("Repetition guard: [color=CYAN]%s[/color]" % LLMManager.repetitionGuard)
+
+func _cmd_aiModel(name: String) -> void:
+	LLMManager.setModel(name)
+	Console.print("Model switched to: [color=CYAN]%s[/color]" % name)
+
+func _cmd_banwords(w1: String = "", w2: String = "", w3: String = "", w4: String = "") -> void:
+	var words: Array = gbData.settings.get("llmBanWords", [])
+
+	if w1 == "":
+		_printBanwordsMenu(words)
+		return
+
+	if w1 == "0" and w2 == "":
+		Console.print("Cancelled.")
+		return
+
+	# same number twice = confirm delete
+	if w1.is_valid_int() and w2.is_valid_int() and w3 == "" and w1 == w2:
+		var idx: int = int(w1) - 1
+		if idx >= 0 and idx < words.size():
+			var removed = words[idx]
+			words.remove_at(idx)
+			Console.print("Removed: [color=RED]%s[/color]" % removed)
+		else:
+			Console.print("[color=RED]No word with that number.[/color]")
+	elif w1.is_valid_int() and w2 == "":
+		Console.print("[color=YELLOW]Type the number AGAIN separated by a space to confirm deletion (e.g.: banwords %s %s).[/color]" % [w1, w1])
+		_printBanwordsMenu(words)
+		return
+	else:
+		var parts: Array = []
+		for w in [w1, w2, w3, w4]:
+			if w != "":
+				parts.append(w)
+		var phrase: String = " ".join(parts)
+		words.append(phrase)
+		Console.print("Added: [color=GREEN]%s[/color]" % phrase)
+
+	gbData.settings["llmBanWords"] = words
+	gbData.savetodisk("user://CONFIG.json", gbData.settings)
+	LLMManager.setBanWords(words)
+	_printBanwordsMenu(words)
+
+func _printBanwordsMenu(words: Array) -> void:
+	Console.print("Banned words/phrases:")
+	if words.is_empty():
+		Console.print("(empty)")
+	for i in words.size():
+		Console.print("%d. %s" % [i + 1, words[i]])
+	Console.print(">To remove a word from the list, give its number TWICE separated by a space (e.g.: banwords 2 2)")
+	Console.print(">To add a word, type it after the command and press ENTER (e.g.: banwords you always)")
+	Console.print(">To exit without changes, type: banwords 0")

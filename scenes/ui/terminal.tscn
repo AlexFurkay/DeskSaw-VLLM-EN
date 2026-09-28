@@ -325,7 +325,7 @@ defaultValue = "30.0"
 layout_mode = 2
 label = "Maximum time between passive dialouge"
 key = "maxDialogueTime"
-defaultValue = "60.0"
+defaultValue = "65.0"
 
 [node name="AudioPanel" type="Panel" parent="MarginContainer/ViewportPanel/SettingsView/MarginContainer/VBoxContainer/SettingsPanel/MarginContainer" unique_id=68479689]
 visible = false
@@ -418,7 +418,7 @@ theme_override_constants/separation = 0
 layout_mode = 2
 label = "Max FPS: Idle"
 key = "maxFPSIdle"
-defaultValue = 45.0
+defaultValue = 60.0
 sliderMinimum = 30.0
 sliderMaximum = 144.0
 sliderStep = 1.0
