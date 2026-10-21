@@ -1,5 +1,9 @@
 EN VERSION, RU VERSION IS ON https://github.com/AlexFurkay/DeskSaw-VLLM
 
+-------------------------------------------------------
+BIG UPDATE IS ALREADY AT RU-VLLM, EN VLLM IS IN FINAL STAGE
+-------------------------------------------------------
+
 Introducing a desktop pet powered by a local LLM [Ollama]!
 The character lives on your desktop, reacts to what you do with it and what's happening on your screen,
 and speaks — not with pre-recorded lines, but with unique, non-repeating phrases.
