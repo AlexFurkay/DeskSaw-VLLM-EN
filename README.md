@@ -1,9 +1,11 @@
 EN VERSION, RU VERSION IS ON https://github.com/AlexFurkay/DeskSaw-VLLM
 
--------------------------------------------------------
-BIG UPDATE IS ALREADY AT RU-VLLM, EN VLLM IS IN FINAL STAGE
-NO, REALLY, THIS IS FIRE
--------------------------------------------------------
+> ## ⚠️ BIG UPDATE IS COMING SOON
+> The build in this repository is **0.49 (September 2026)** — it's very old.
+> The new version is in final testing: English and Russian in **one** build, eight characters with their own personalities,
+> talking to the characters, characters talking to each other, your own custom items, and much more.
+> NO, REALLY, THIS IS FIRE.
+> Parts of this page marked *"coming with the big update"* will be filled in on release. Watch the repo so you don't miss it!
 
 Introducing a desktop pet powered by a local LLM [Ollama]!
 The character lives on your desktop, reacts to what you do with it and what's happening on your screen,
@@ -13,18 +15,15 @@ and speaks — not with pre-recorded lines, but with unique, non-repeating phras
   **Requirements**
 - Windows (macOS/Linux builds will come later),
 - https://ollama.com/download, installed and running (can be minimized to the tray),
-- A GPU with 6+ GB of VRAM for comfortable performance with the default model (wip,
+- A GPU with 8+ GB of VRAM for comfortable performance with the default model (details coming with the big update),
 
 The model can be downloaded manually with one command in the windows CMD, or with one command in-game as well.
 List of models that will work in the game and their specs (a stronger model = better lines = needs a stronger PC)
 
-1) wip
+*The full list of models is coming with the big update.*
 
-
-3) wip
-
-DeskSaw ships as two separate versions — Russian and English, these are two different builds,
-so changing the language means downloading the other build. Download the one you need from the releases section.
+For now DeskSaw ships as two separate builds — Russian and English.
+With the big update both languages will be in one build, and the language can be switched right in the game.
 
   **First launch**
 
@@ -123,7 +122,7 @@ Opens with `Ctrl + right click` on the character.
 | `nukeData` | reset absolutely everything (save, settings) — be careful, the command name means exactly what it says |
 
 ## Having issues?
-wip
+*More tips are coming with the big update.*
 
 - **AI reactions are very slow or don't show up** — check that the `ollama` app is running, and that the computer has enough free resources (close heavy background programs like games/streams while testing).
 - **Closed literally everything - still empty/slow** — check Task Manager; if CPU, RAM and GPU are all maxed out, the bad news is your PC can't handle the AI model. One fix - use a smaller model.
