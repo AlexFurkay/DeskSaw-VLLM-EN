@@ -2,6 +2,7 @@ EN VERSION, RU VERSION IS ON https://github.com/AlexFurkay/DeskSaw-VLLM
 
 -------------------------------------------------------
 BIG UPDATE IS ALREADY AT RU-VLLM, EN VLLM IS IN FINAL STAGE
+NO, REALLY, THIS IS FIRE
 -------------------------------------------------------
 
 Introducing a desktop pet powered by a local LLM [Ollama]!
@@ -12,23 +13,15 @@ and speaks — not with pre-recorded lines, but with unique, non-repeating phras
   **Requirements**
 - Windows (macOS/Linux builds will come later),
 - https://ollama.com/download, installed and running (can be minimized to the tray),
-- A GPU with 6+ GB of VRAM for comfortable performance with the default model (*qwen3-vl:8b-instruct*),
+- A GPU with 6+ GB of VRAM for comfortable performance with the default model (wip,
 
 The model can be downloaded manually with one command in the windows CMD, or with one command in-game as well.
 List of models that will work in the game and their specs (a stronger model = better lines = needs a stronger PC)
 
-1) `qwen3-vl:8b-instruct` - the stock model - 8GB VRAM, CPU no worse than i5-8400, 6-10GB DDR4, GPU no lower than GTX 1070ti, model weight 6.1GB
-
-   >   download command: ollama run qwen3-vl:8b-instruct
-
-   >   settings: aiCreativity 0.9, aiRepetitionGuard 1.2
+1) wip
 
 
-3) `ministral-3:14b` - a stronger model - noticeably more lively and literary speech - from 10GB VRAM, CPU no worse than i5-9400, 12-16GB DDR4, GPU no lower than RTX 3060 12GB, model weight 9.1GB. Can also run on a more modest GPU (e.g. GTX 1070 Ti), but noticeably slower: generating the initial batch of lines can take around 800 seconds instead of 120
-
-   >   download command: ollama run ministral-3:14b
-
-   >   settings: aiCreativity 0.6, aiRepetitionGuard 1.1
+3) wip
 
 DeskSaw ships as two separate versions — Russian and English, these are two different builds,
 so changing the language means downloading the other build. Download the one you need from the releases section.
@@ -130,6 +123,7 @@ Opens with `Ctrl + right click` on the character.
 | `nukeData` | reset absolutely everything (save, settings) — be careful, the command name means exactly what it says |
 
 ## Having issues?
+wip
 
 - **AI reactions are very slow or don't show up** — check that the `ollama` app is running, and that the computer has enough free resources (close heavy background programs like games/streams while testing).
 - **Closed literally everything - still empty/slow** — check Task Manager; if CPU, RAM and GPU are all maxed out, the bad news is your PC can't handle the AI model. One fix - use a smaller model.
