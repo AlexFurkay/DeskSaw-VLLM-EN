@@ -6,4 +6,4 @@
 
 ### ⬇️ [Download the latest version](https://github.com/AlexFurkay/DeskSaw-VLLM/releases/latest)
 
-This repository is no longer updated. The old 0.49 build in its Releases is kept only for history.
+This repository is no longer updated.
